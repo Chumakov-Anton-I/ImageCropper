@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="iconApp.png">images/app.png</file>
+        <file alias="iconOpen.png">images/open.png</file>
+        <file alias="iconSave.png">images/save.png</file>
+        <file alias="iconMirror.png">images/mirror.png</file>
+        <file alias="icon100percent.png">images/icon100.png</file>
+    </qresource>
+</RCC>

@@ -23,20 +23,20 @@ MainWindow::MainWindow(QWidget *parent)
     auto *cmdLayout = new QVBoxLayout;
     //cmdLayout->setContentsMargins(1, 1, 1, 1);
     topLayout->addLayout(cmdLayout);
-    m_btnOpen = new QPushButton(tr("Open Image..."));
-    m_btnMirror = new QPushButton(tr("Flip horizontally"));
+    m_btnOpen = new QPushButton(QIcon(":/iconOpen.png"), tr("Open Image..."));
+    m_btnMirror = new QPushButton(QIcon(":/iconMirror.png"), tr("Flip horizontally"));
     cmdLayout->addWidget(m_btnOpen);
     cmdLayout->addWidget(m_btnMirror);
     auto *form = new QFormLayout;
     cmdLayout->addLayout(form);
     m_sbImageScale = new QSpinBox;
     form->addRow(tr("Image scale:"), m_sbImageScale);
-    m_btnNaturalSize = new QPushButton("100 %");
+    m_btnNaturalSize = new QPushButton(QIcon(":/icon100percent.png"), "100 %");
     form->addRow(m_btnNaturalSize);
     m_lblImagePos = new QLabel;
     form->addRow(tr("Image position:"), m_lblImagePos);
 
-    m_btnSave = new QPushButton(tr("Save cover"));
+    m_btnSave = new QPushButton(QIcon(":/iconSave.png"), tr("Save cover"));
     cmdLayout->addWidget(m_btnSave);
     cmdLayout->addStretch(1);
     // canvas

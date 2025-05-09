@@ -26,3 +26,6 @@ gcc: {
 clang:{
     QMAKE_CXXFLAGS_RELEASE += -O3
 }
+
+RESOURCES += \
+    resources.qrc
