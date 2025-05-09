@@ -9,6 +9,7 @@
 
 class QPushButton;
 class QLabel;
+class QSpinBox;
 class TCanvas;
 
 class MainWindow : public QWidget
@@ -20,25 +21,15 @@ public:
 public slots:
     void openImage();
     void saveImage();
-    void scaleUp();
-    void scaleDown();
-    void scaleUp1();
-    void scaleDown1();
     void scale100percent();
 
 private:
     QPushButton *m_btnOpen;
     QPushButton *m_btnSave;
-    QPushButton *m_btnScaleUp;
-    QPushButton *m_btnScaleDown;
-    QPushButton *m_btnScaleUp1;
-    QPushButton *m_btnScaleDown1;
     QPushButton *m_btnNaturalSize;
     QPushButton *m_btnMirror;
-    QLabel *m_lblImageScale;
-    QLabel *m_lblFrameScale;
     QLabel *m_lblImagePos;
-    QLabel *m_lblFramePos;
+    QSpinBox *m_sbImageScale;
     TCanvas *m_canvas;
     int m_scale = 100;    // per cent
     QString m_path;
@@ -46,8 +37,8 @@ private:
     void openImagePrivate(const QString &filePath);
 
 private slots:
-    void traceFrame(const QPoint &p);
     void traceImage(const QPoint &p);
+    void watchScale(int scale);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event);

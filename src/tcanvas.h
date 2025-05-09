@@ -19,9 +19,10 @@ public:
     ~TCanvas();
 
     bool loadImage(const QString &file);
+    int scale() const { return qRound(m_imageScale*100); }
 
 public slots:
-    void setScale(double scale);
+    void setScale(int scale);
     void saveCover(const QString &fpath);
     void mirror();
 
@@ -30,6 +31,7 @@ private:
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
+    void wheelEvent(QWheelEvent *e);
 
     CFrame *m_frame;
     QPainter *m_painter;
@@ -43,7 +45,7 @@ private:
 
 signals:
     void imageMoved(const QPoint &p);
-    void frameMoved(const QPoint &p);
+    void scaleChanged(int scale);
 };
 
 #endif // TCANVAS_H

@@ -2,10 +2,10 @@
 #include "tcanvas.h"
 
 #include <QBoxLayout>
-#include <QGridLayout>
 #include <QFormLayout>
 #include <QPushButton>
 #include <QLabel>
+#include <QSpinBox>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QFileInfo>
@@ -21,54 +21,41 @@ MainWindow::MainWindow(QWidget *parent)
     setLayout(topLayout);
     // control panel
     auto *cmdLayout = new QVBoxLayout;
-    cmdLayout->setContentsMargins(1, 1, 1, 1);
+    //cmdLayout->setContentsMargins(1, 1, 1, 1);
     topLayout->addLayout(cmdLayout);
     m_btnOpen = new QPushButton(tr("Open Image..."));
-    m_btnSave = new QPushButton(tr("Save cover"));
     m_btnMirror = new QPushButton(tr("Flip horizontally"));
     cmdLayout->addWidget(m_btnOpen);
-    cmdLayout->addWidget(m_btnSave);
     cmdLayout->addWidget(m_btnMirror);
-    m_btnScaleUp = new QPushButton("+5%");
-    m_btnScaleDown = new QPushButton("-5%");
-    m_btnScaleUp1 = new QPushButton("+1%");
-    m_btnScaleDown1 = new QPushButton("-1%");
-    m_btnNaturalSize = new QPushButton("100 %");
-    auto *gridLayout = new QGridLayout;
-    cmdLayout->addLayout(gridLayout);
-    gridLayout->addWidget(m_btnScaleUp, 0, 0);
-    gridLayout->addWidget(m_btnScaleDown, 0, 1);
-    gridLayout->addWidget(m_btnScaleUp1, 1, 0);
-    gridLayout->addWidget(m_btnScaleDown1, 1, 1);
-    gridLayout->addWidget(m_btnNaturalSize, 2, 0, 1, 2);
     auto *form = new QFormLayout;
     cmdLayout->addLayout(form);
-    m_lblImageScale = new QLabel(QString::number(m_scale));
-    m_lblFrameScale = new QLabel;
-    form->addRow(tr("Image scale:"), m_lblImageScale);
-    form->addRow(tr("Frame scale:"), m_lblFrameScale);
+    m_sbImageScale = new QSpinBox;
+    form->addRow(tr("Image scale:"), m_sbImageScale);
+    m_btnNaturalSize = new QPushButton("100 %");
+    form->addRow(m_btnNaturalSize);
     m_lblImagePos = new QLabel;
-    m_lblFramePos = new QLabel;
     form->addRow(tr("Image position:"), m_lblImagePos);
-    form->addRow(tr("Frame position:"), m_lblFramePos);
 
+    m_btnSave = new QPushButton(tr("Save cover"));
+    cmdLayout->addWidget(m_btnSave);
     cmdLayout->addStretch(1);
     // canvas
     m_canvas = new TCanvas;
     topLayout->addWidget(m_canvas);
     topLayout->setStretch(1, 1);
 
+    m_sbImageScale->setRange(10, 100);  // [10, 100]%
+    m_sbImageScale->setValue(m_scale);
+    m_sbImageScale->setSuffix(" %");
+
     // conections
     connect(m_btnOpen, &QPushButton::clicked, this, &MainWindow::openImage);
     connect(m_btnSave, &QPushButton::clicked, this, &MainWindow::saveImage);
     connect(m_btnMirror, &QPushButton::clicked, m_canvas, &TCanvas::mirror);
-    connect(m_btnScaleUp, &QPushButton::clicked, this, &MainWindow::scaleUp);
-    connect(m_btnScaleDown, &QPushButton::clicked, this, &MainWindow::scaleDown);
-    connect(m_btnScaleUp1, &QPushButton::clicked, this, &MainWindow::scaleUp1);
-    connect(m_btnScaleDown1, &QPushButton::clicked, this, &MainWindow::scaleDown1);
     connect(m_btnNaturalSize, &QPushButton::clicked, this, &MainWindow::scale100percent);
+    connect(m_sbImageScale, &QSpinBox::valueChanged, m_canvas, &TCanvas::setScale);
 
-    connect(m_canvas, &TCanvas::frameMoved, this, &MainWindow::traceFrame);
+    connect(m_canvas, &TCanvas::scaleChanged, this, &MainWindow::watchScale);
     connect(m_canvas, &TCanvas::imageMoved, this, &MainWindow::traceImage);
 
     setAcceptDrops(true);
@@ -84,14 +71,16 @@ void MainWindow::openImagePrivate(const QString &filePath)
     scale100percent();
 }
 
-void MainWindow::traceFrame(const QPoint &p)
-{
-    m_lblFramePos->setText(QString("%1, %2").arg(p.x()).arg(p.y()));
-}
-
 void MainWindow::traceImage(const QPoint &p)
 {
     m_lblImagePos->setText(QString("%1, %2").arg(p.x()).arg(p.y()));
+}
+
+void MainWindow::watchScale(int scale)
+{
+    m_sbImageScale->blockSignals(true);
+    m_sbImageScale->setValue(scale);
+    m_sbImageScale->blockSignals(false);
 }
 
 void MainWindow::openImage()
@@ -110,46 +99,11 @@ void MainWindow::saveImage()
     m_canvas->saveCover(fname);
 }
 
-// TODO: заменить это непотребство обработкой мышьего колеса
-void MainWindow::scaleUp()
-{
-    m_scale += 5;
-    if (m_scale >= 100)
-        m_scale = 100;
-    m_canvas->setScale(m_scale / 100.0);
-    m_lblImageScale->setText(QString("%1 %").arg(m_scale));
-}
-void MainWindow::scaleDown()
-{
-    m_scale -= 5;
-    if (m_scale <= 10)
-        m_scale = 10;
-    m_canvas->setScale(m_scale / 100.0);
-    m_lblImageScale->setText(QString("%1 %").arg(m_scale));
-}
-void MainWindow::scaleUp1()
-{
-    m_scale += 1;
-    if (m_scale >= 100)
-        m_scale = 100;
-    m_canvas->setScale(m_scale / 100.0);
-    m_lblImageScale->setText(QString("%1 %").arg(m_scale));
-}
-void MainWindow::scaleDown1()
-{
-    m_scale -= 1;
-    if (m_scale <= 10)
-        m_scale = 10;
-    m_canvas->setScale(m_scale / 100.0);
-    m_lblImageScale->setText(QString("%1 %").arg(m_scale));
-}
-// END TODO
-
 void MainWindow::scale100percent()
 {
     m_scale = 100;
-    m_canvas->setScale(1.0);
-    m_lblImageScale->setText(QString("%1 %").arg(m_scale));
+    m_canvas->setScale(m_scale);
+    //m_lblImageScale->setText(QString("%1 %").arg(m_scale));
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
