@@ -9,14 +9,22 @@ TCanvas::TCanvas(QWidget *parent)
     : QWidget{parent}
 {
     setMinimumSize(900, 600);
+    m_coverSize = QSize(950, 950);
     m_painter = new QPainter;
-    m_frame = new CFrame(this, m_coverSize, 0.95);
+    m_frame = new CFrame(this, m_coverSize, 0.98);
 }
 
 TCanvas::~TCanvas()
 {
     delete m_painter;
     delete m_frame;
+}
+
+void TCanvas::setFrameSize(const QSize &size)
+{
+    m_coverSize = size;
+    m_frame->setSize(size);
+    update();
 }
 
 bool TCanvas::loadImage(const QString &file)
@@ -44,11 +52,11 @@ void TCanvas::saveCover(const QString &fpath)
     QSizeF nSize = m_image.size().toSizeF() * m_imageScale;
     QImage scaledImg = m_image.scaled(nSize.toSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     QPointF P = m_picOrigin.toPointF();         // coord of image
-    QPointF F = m_frame->topLeft().toPointF();  // coord of frame
+    QPointF F = m_frame->origin().toPointF();   // coord of frame
     QPointF deltaF = F + P;     // difference
     deltaF /= m_frame->scale(); // to true size
     QPoint delta = deltaF.toPoint();
-    scaledImg.copy(delta.x(), delta.y(), m_coverSize, m_coverSize).save(fpath, "JPG");
+    scaledImg.copy(QRect(delta, m_coverSize)).save(fpath, "JPG");
 }
 
 void TCanvas::mirror()
@@ -63,15 +71,28 @@ void TCanvas::paintEvent(QPaintEvent*)
     m_frame->update();  // update frame
     emit imageMoved(m_picOrigin);
     QSizeF scrSize = m_image.size().toSizeF() * (m_imageScale * m_frame->scale());  // fit to screen size
-    QImage img = m_image.scaled(scrSize.toSize(), Qt::KeepAspectRatioByExpanding);
+    QImage img = m_image.scaled(scrSize.toSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     /* ===== drawings ===== */
-    m_painter->begin(this);
-    m_painter->fillRect(rect(), Qt::gray);
-    m_painter->drawImage(QPoint(0, 0), img, QRect(m_picOrigin, size()));
+    QImage mask(size(), QImage::Format_ARGB32);
+    mask.fill(QColor(180, 180, 180, 164));
+    m_painter->begin(&mask);
+    m_painter->setCompositionMode(QPainter::CompositionMode_Source);
+    m_painter->fillRect(m_frame->rect(), Qt::transparent);
+    m_painter->setCompositionMode(QPainter::CompositionMode_SourceOver);    // reset mode
     m_painter->setPen(Qt::white);
     m_painter->drawRect(m_frame->rect());
     m_painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
     m_painter->drawRect(m_frame->rect());
+    m_painter->end();
+    //
+    m_painter->begin(this);
+    m_painter->fillRect(rect(), Qt::gray);
+    m_painter->drawImage(QPoint(0, 0), img, QRect(m_picOrigin, size()));
+    //m_painter->setPen(Qt::white);
+    //m_painter->drawRect(m_frame->rect());
+    //m_painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
+    //m_painter->drawRect(m_frame->rect());
+    m_painter->drawImage(0, 0, mask);
     m_painter->end();
 }
 

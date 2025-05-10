@@ -10,18 +10,22 @@
 
 class QWidget;
 
-class CFrame : public QRect
+class CFrame
 {
 public:
-    CFrame(QWidget *parent, int size = 950, double ratio = 0.95);
+    CFrame(QWidget *parent, const QSize &size, double ratio = 0.95);
     void update();
-    QRect rect() const { return QRect(topLeft(), size()); }
+    void setSize(const QSize &size) { m_size = size; }
+    QRect rect() const { return m_rect; }
+    QPoint origin() const { return m_rect.topLeft(); }
+    QSize size() const { return m_size; }
     double scale() const { return m_scale; }
 
 private:
     QWidget *m_parent;
-    int m_size;
-    double m_ratio;
+    QRect m_rect;   // rect to display
+    QSize m_size;   // true size
+    double m_ratio; //
     double m_scale;
 };
 

@@ -30,6 +30,9 @@ private:
     QPushButton *m_btnMirror;
     QLabel *m_lblImagePos;
     QSpinBox *m_sbImageScale;
+    QSpinBox *m_sbFrameW;
+    QSpinBox *m_sbFrameH;
+    QPushButton *m_btnEqualWH;
     TCanvas *m_canvas;
     int m_scale = 100;    // per cent
     QString m_path;
@@ -37,6 +40,9 @@ private:
     void openImagePrivate(const QString &filePath);
 
 private slots:
+    void changeFrameW(int w);
+    void changeFrameH(int h);
+    void setEqualWH(bool b);
     void traceImage(const QPoint &p);
     void watchScale(int scale);
 

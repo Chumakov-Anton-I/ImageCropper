@@ -3,6 +3,8 @@
 
 #include <QBoxLayout>
 #include <QFormLayout>
+#include <QGridLayout>
+#include <QGroupBox>
 #include <QPushButton>
 #include <QLabel>
 #include <QSpinBox>
@@ -21,20 +23,40 @@ MainWindow::MainWindow(QWidget *parent)
     setLayout(topLayout);
     // control panel
     auto *cmdLayout = new QVBoxLayout;
-    //cmdLayout->setContentsMargins(1, 1, 1, 1);
+    cmdLayout->setContentsMargins(5, 5, 5, 5);
     topLayout->addLayout(cmdLayout);
     m_btnOpen = new QPushButton(QIcon(":/iconOpen.png"), tr("Open Image..."));
-    m_btnMirror = new QPushButton(QIcon(":/iconMirror.png"), tr("Flip horizontally"));
     cmdLayout->addWidget(m_btnOpen);
-    cmdLayout->addWidget(m_btnMirror);
     auto *form = new QFormLayout;
     cmdLayout->addLayout(form);
     m_sbImageScale = new QSpinBox;
     form->addRow(tr("Image scale:"), m_sbImageScale);
     m_btnNaturalSize = new QPushButton(QIcon(":/icon100percent.png"), "100 %");
     form->addRow(m_btnNaturalSize);
+    m_btnMirror = new QPushButton(QIcon(":/iconMirror.png"), tr("Flip horizontally"));
+    cmdLayout->addWidget(m_btnMirror);
     m_lblImagePos = new QLabel;
     form->addRow(tr("Image position:"), m_lblImagePos);
+    // frame
+    auto *frmSizesBox = new QGroupBox(tr("Frame size"));
+    cmdLayout->addWidget(frmSizesBox);
+    auto *sizeGrid = new QGridLayout;
+    frmSizesBox->setLayout(sizeGrid);
+    m_sbFrameW = new QSpinBox;
+    m_sbFrameW->setRange(64, 2000);
+    m_sbFrameW->setSuffix(" px");
+    m_sbFrameW->setValue(950);
+    m_sbFrameH = new QSpinBox;
+    m_sbFrameH->setRange(64, 2000);
+    m_sbFrameH->setSuffix(" px");
+    m_sbFrameH->setValue(950);
+    m_btnEqualWH = new QPushButton(tr("="));
+    m_btnEqualWH->setCheckable(true);
+    m_btnEqualWH->setChecked(true);
+    m_btnEqualWH->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
+    sizeGrid->addWidget(m_sbFrameW, 0, 0);
+    sizeGrid->addWidget(m_sbFrameH, 1, 0);
+    sizeGrid->addWidget(m_btnEqualWH, 0, 1, 2, 1);
 
     m_btnSave = new QPushButton(QIcon(":/iconSave.png"), tr("Save cover"));
     cmdLayout->addWidget(m_btnSave);
@@ -54,6 +76,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_btnMirror, &QPushButton::clicked, m_canvas, &TCanvas::mirror);
     connect(m_btnNaturalSize, &QPushButton::clicked, this, &MainWindow::scale100percent);
     connect(m_sbImageScale, &QSpinBox::valueChanged, m_canvas, &TCanvas::setScale);
+    connect(m_sbFrameW, &QSpinBox::valueChanged, this, &MainWindow::changeFrameW);
+    connect(m_sbFrameH, &QSpinBox::valueChanged, this, &MainWindow::changeFrameH);
+    connect(m_btnEqualWH, &QPushButton::clicked, this, &MainWindow::setEqualWH);
 
     connect(m_canvas, &TCanvas::scaleChanged, this, &MainWindow::watchScale);
     connect(m_canvas, &TCanvas::imageMoved, this, &MainWindow::traceImage);
@@ -69,6 +94,36 @@ void MainWindow::openImagePrivate(const QString &filePath)
     if (!m_canvas->loadImage(filePath))
         QMessageBox::critical(this, tr("Error"), tr("Cannot open file %1").arg(filePath));
     scale100percent();
+}
+
+void MainWindow::changeFrameW(int w)
+{
+    if (m_btnEqualWH->isChecked()) {
+        m_sbFrameH->blockSignals(true);
+        m_sbFrameH->setValue(w);
+        m_sbFrameH->blockSignals(false);
+    }
+    m_canvas->setFrameSize(QSize(w, m_sbFrameH->value()));
+}
+
+void MainWindow::changeFrameH(int h)
+{
+    if (m_btnEqualWH->isChecked()) {
+        m_sbFrameW->blockSignals(true);
+        m_sbFrameW->setValue(h);
+        m_sbFrameW->blockSignals(false);
+    }
+    m_canvas->setFrameSize(QSize(m_sbFrameW->value(), h));
+}
+
+void MainWindow::setEqualWH(bool b)
+{
+    if (!b) return;
+    int w = m_sbFrameW->value();
+    m_sbFrameH->blockSignals(true);
+    m_sbFrameH->setValue(w);
+    m_sbFrameH->blockSignals(false);
+    m_canvas->setFrameSize(QSize(w, w));
 }
 
 void MainWindow::traceImage(const QPoint &p)
@@ -103,7 +158,6 @@ void MainWindow::scale100percent()
 {
     m_scale = 100;
     m_canvas->setScale(m_scale);
-    //m_lblImageScale->setText(QString("%1 %").arg(m_scale));
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)

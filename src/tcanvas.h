@@ -18,6 +18,7 @@ public:
     explicit TCanvas(QWidget *parent = nullptr);
     ~TCanvas();
 
+    void setFrameSize(const QSize &size);
     bool loadImage(const QString &file);
     int scale() const { return qRound(m_imageScale*100); }
 
@@ -38,7 +39,7 @@ private:
     QImage m_image;
     QPoint m_picOrigin;
     QPoint m_lastMousePos;
-    int m_coverSize = 950;  // pix
+    QSize m_coverSize;    //int m_coverSize = 950;  // pix
     double m_imageScale;    // scale of loaded picture
     bool imageLoaded = false;
     bool mousePressed = false;
