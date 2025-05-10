@@ -13,7 +13,9 @@ The application uses Qt Toolkit 6.8.1.
 1. Clone the repository:
 
 ```git clone https://github.com/Chumakov-Anton-I/ImageCropper.git```
+
 or
+
 ```git clone git@github.com:Chumakov-Anton-I/ImageCropper.git```
 
 2. Use QtCreator to open **ImageCropper.pro**.
