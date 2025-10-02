@@ -56,7 +56,7 @@ void TCanvas::saveCover(const QString &fpath)
     QPointF deltaF = F + P;     // difference
     deltaF /= m_frame->scale(); // to true size
     QPoint delta = deltaF.toPoint();
-    scaledImg.copy(QRect(delta, m_coverSize)).save(fpath, "JPG");
+    scaledImg.copy(QRect(delta, m_coverSize)).save(fpath, "JPG", 95);
 }
 
 void TCanvas::mirror()
