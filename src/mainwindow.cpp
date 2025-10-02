@@ -53,7 +53,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_btnEqualWH = new QPushButton(tr("="));
     m_btnEqualWH->setCheckable(true);
     m_btnEqualWH->setChecked(true);
-    m_btnEqualWH->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
+    m_btnEqualWH->setMaximumWidth(30);
+    m_btnEqualWH->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
     sizeGrid->addWidget(m_sbFrameW, 0, 0);
     sizeGrid->addWidget(m_sbFrameH, 1, 0);
     sizeGrid->addWidget(m_btnEqualWH, 0, 1, 2, 1);

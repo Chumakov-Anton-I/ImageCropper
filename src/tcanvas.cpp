@@ -61,7 +61,7 @@ void TCanvas::saveCover(const QString &fpath)
 
 void TCanvas::mirror()
 {
-    m_image = m_image.mirrored(true, false);
+    m_image = m_image.flipped(Qt::Horizontal);  //m_image.mirrored(true, false);
     update();
 }
 
